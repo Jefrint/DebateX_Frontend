@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Home from "./pages/Home";
 import LandingPage from "./pages/LandingPage";
 import Navbar from './components/navbar';
+import DebateCard from './components/DebateCard';
 
 
 function App() {
@@ -10,6 +11,7 @@ function App() {
   return (
     <div className="App">
       <Navbar/>
+      
       
       <Routes>
        
