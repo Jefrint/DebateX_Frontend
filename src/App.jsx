@@ -5,6 +5,8 @@ import Navbar from './components/navbar';
 import DebateCard from './components/DebateCard';
 import PastDebates from "./components/PastDebates";
 import Footer from "./components/Footer"; 
+import Signup from "./pages/Signup";
+import LoginPage from "./pages/LoginPage";
 
 function App() {
   
@@ -18,7 +20,9 @@ function App() {
        
         <Route path="/" element={<LandingPage />} />
         <Route path="/home" element={<Home />} />
-        
+         <Route path="/signup" element={<Signup />} />
+        <Route path="/login" element={<LoginPage />} />
+
       </Routes>
       <Footer/>
     </div>
