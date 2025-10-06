@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import OngoingDebateCard from "../components/DebateCard";
 import UpcomingDebateCard from "../components/Up_Debates";
 
@@ -47,9 +47,14 @@ const ExploreDebates = () => {
       countdown: "2 Days Left",
     },
   ];
+  const [selectedCategory, setSelectedCategory] = useState("All");
+  const filteredDebates =
+  selectedCategory === "All"
+    ? upcomingDebates
+    : upcomingDebates.filter((debate) => debate.category === selectedCategory);
 
   return (
-    <div className=" mx-auto px-6 py-10">
+    <div className="mx-auto px-6 py-10">
       {/* Page Header */}
       <h1 className="text-2xl font-bold text-gray-800 mb-2">Explore Debates</h1>
       <p className="text-gray-600 mb-6">
@@ -76,9 +81,8 @@ const ExploreDebates = () => {
       <h2 className="text-lg font-semibold text-gray-800 mt-10 mb-4">
         Upcoming Debates
       </h2>
-
-      {/* Category Tabs */}
-      <div className="flex flex-wrap gap-3 mb-6">
+{/* Category Tabs */}
+<div className="flex flex-wrap gap-3 mb-6">
         {[
           "All",
           "Politics and Governance",
@@ -89,7 +93,12 @@ const ExploreDebates = () => {
         ].map((cat) => (
           <button
             key={cat}
-            className="px-4 py-1 border rounded-lg text-sm text-gray-700 hover:bg-gray-100"
+            onClick={() => setSelectedCategory(cat)}
+            className={`px-4 py-1 border rounded-lg text-sm ${
+              selectedCategory === cat
+                ? "bg-black text-white border-black"
+                : "text-gray-700 hover:bg-gray-100"
+            }`}
           >
             {cat}
           </button>
@@ -98,7 +107,7 @@ const ExploreDebates = () => {
 
       {/* Upcoming Debate Cards */}
       <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
-        {upcomingDebates.map((debate, i) => (
+        {filteredDebates.map((debate, i) => (
           <UpcomingDebateCard key={i} debate={debate} />
         ))}
       </div>
