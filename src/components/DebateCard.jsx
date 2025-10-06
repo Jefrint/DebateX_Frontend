@@ -1,54 +1,19 @@
 import React, { useEffect, useState } from "react";
 
-const DebateCard = () => {
-  const [debate, setDebate] = useState(null);
+const DebateCard = ({ debate }) => {
   const [loading, setLoading] = useState(true);
 
-  // Fetch debate data from backend
+  // Simulate loading effect (optional)
   useEffect(() => {
-    const fetchDebate = async () => {
-      try {
-        // TODO: Replace this with your FastAPI endpoint later
-        // Example: const response = await fetch("http://127.0.0.1:8000/debates/ongoing");
-        // const data = await response.json();
-
-        // Mock hardcoded data (for now)
-        const data = {
-          id: 1,
-          title: "ഭാഷ നഷ്ടപ്പെട്ടാൽ തിരിച്ചറിയൽ നഷ്ടപ്പെടും?",
-          description:
-            "മലയാള ഭാഷയുടെ നിലനിൽപ്പ് സുരക്ഷിതമാണോ?",
-          startTime: "March 18, 2024, 12:00 PM IST",
-          timeRemaining: "2 Hours Left",
-          participants: 200,
-          avatars: [
-            "/assets/user1.jpg",
-            "/assets/user2.jpg",
-            "/assets/user3.jpg",
-            "/assets/user4.jpg",
-            "/assets/user5.jpg",
-          ],
-          agreePercent: 20,
-          differPercent: 80,
-          status: "LIVE",
-        };
-
-        setDebate(data);
-        setLoading(false);
-      } catch (error) {
-        console.error("Error fetching debate:", error);
-        setLoading(false);
-      }
-    };
-
-    fetchDebate();
+    const timer = setTimeout(() => setLoading(false), 500);
+    return () => clearTimeout(timer);
   }, []);
 
   if (loading) return <p className="text-center">Loading debate...</p>;
   if (!debate) return <p className="text-center">No debate available</p>;
 
   return (
-    <div className="w-full max-w-6xl mx-auto bg-white border border-green-400 rounded-lg shadow-sm p-5">
+    <div className="w-full mx-auto bg-white border border-green-400 rounded-lg shadow-sm p-5">
       {/* Debate Question */}
       <div className="flex items-center justify-between mb-2">
         <h2 className="text-lg font-semibold text-gray-800">{debate.title}</h2>
@@ -67,7 +32,7 @@ const DebateCard = () => {
         </div>
         <div>
           <span className="font-semibold">Time Remaining:</span>
-          <p>{debate.timeRemaining}</p>
+          <p>{debate.remaining}</p>
         </div>
       </div>
 
@@ -80,7 +45,7 @@ const DebateCard = () => {
         <div className="flex items-center">
           {/* Avatars */}
           <div className="flex -space-x-2">
-            {debate.avatars.map((avatar, idx) => (
+            {debate.images.map((avatar, idx) => (
               <img
                 key={idx}
                 className="w-8 h-8 rounded-full border border-white"
@@ -101,13 +66,13 @@ const DebateCard = () => {
           <span className="text-green-600">{debate.agreePercent}% Agree</span>
           <span className="text-red-600">{debate.differPercent}% Differ</span>
         </div>
-        <div className="w-full bg-gray-200 h-2 rounded flex">
+        <div className="w-full bg-gray-200 h-2 rounded flex overflow-hidden">
           <div
-            className="bg-green-500 h-2 rounded-l"
+            className="bg-green-500 h-2"
             style={{ width: `${debate.agreePercent}%` }}
           ></div>
           <div
-            className="bg-red-500 h-2 rounded-r"
+            className="bg-red-500 h-2"
             style={{ width: `${debate.differPercent}%` }}
           ></div>
         </div>
