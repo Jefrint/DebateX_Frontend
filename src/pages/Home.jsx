@@ -7,16 +7,18 @@ import PastDebates from '../components/PastDebates'
 import DifferReactionBar from '../components/DifferReactionBar'
 
 
+
 const Home = () => {
   return (
 
     <>
     
     <div>Home</div>
+
  <ActiveDebateHeader/>   
-<DebateCard/>
+
 <Int_Article/>
-<Up_Debates/>
+
 <PastDebates/>
 
 
