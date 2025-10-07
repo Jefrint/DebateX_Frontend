@@ -3,6 +3,9 @@ import Int_Article from '../components/Int_Article'
 
 import ActiveDebateHeader from '../components/ActiveDebateHeader'
 import PastDebates from '../components/PastDebates'
+import DifferReactionBar from '../components/DifferReactionBar'
+
+
 
 const Home = () => {
   return (
