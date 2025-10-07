@@ -12,10 +12,7 @@ const Home = () => {
     
     <div>Home</div>
  <ActiveDebateHeader/>   
-<DebateCard/>
-<Int_Article/>
-<Up_Debates/>
-<PastDebates/>
+
 
     </>
   )
