@@ -3,8 +3,6 @@ import Home from "./pages/Home";
 import LandingPage from "./pages/LandingPage";
 import Navbar from './components/navbar';
 import ExploreDebates from './pages/ExploreDebates';
-import DebateCard from './components/DebateCard';
-import PastDebates from "./components/PastDebates";
 import Footer from "./components/Footer"; 
 import Signup from "./pages/Signup";
 import LoginPage from "./pages/LoginPage";
