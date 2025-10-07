@@ -26,7 +26,7 @@ const DifferReactionBar = () => {
   };
 
   return (
-    <div className="bg-[#FDF5F5] flex items-center justify-between px-6 py-3 rounded-md shadow-sm max-w-sm mx-auto">
+    <div className="bg-[#FDF5F5] flex items-center justify-between px-6 py-3 rounded-md shadow-sm max-w-lg mx-auto">
       {/* Left - Dislike (Thumbs Down) */}
       <div
         onClick={() => handleReaction("differ")}
