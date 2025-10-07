@@ -1,9 +1,8 @@
 import React from 'react'
-import Int_Article from '../components/Int_Article'
 
 import ActiveDebateHeader from '../components/ActiveDebateHeader'
-import PastDebates from '../components/PastDebates'
-import DifferReactionBar from '../components/DifferReactionBar'
+import DifferReactionBar from "../components/DifferReactionBar"
+import ReactionBar from "../components/ReactionBar"
 
 
 
@@ -14,8 +13,9 @@ const Home = () => {
     
     <div>Home</div>
     <ActiveDebateHeader/>   
-  <Int_Article/>
-  <PastDebates/>
+  
+    <ReactionBar />       {/* For Agree section */}
+    <DifferReactionBar /> 
 
     </>
   )

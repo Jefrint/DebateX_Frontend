@@ -6,7 +6,7 @@ import ExploreDebates from './pages/ExploreDebates';
 import Footer from "./components/Footer"; 
 import Signup from "./pages/Signup";
 import LoginPage from "./pages/LoginPage";
-
+import CommentPage from "./pages/CommentPage"
 function App() {
   
 
@@ -17,9 +17,10 @@ function App() {
       
       <Routes>
        
-        <Route path="/" element={<LandingPage />} />
+      <Route path="/commentpage" element={<CommentPage />} />
+
         <Route path="/home" element={<Home />} />
-        <Route path="/exploredebates" element={<ExploreDebates />} />
+        <Route path="/" element={<ExploreDebates />} />
          <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<LoginPage />} />
 
