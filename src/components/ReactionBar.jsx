@@ -1,15 +1,24 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ThumbsUp, MessageCirclePlus } from "lucide-react";
 import CommentBox from "./CommentBox";
 
-const ReactionBar = () => {
+const ReactionBar = ({ debate, stats }) => {
   const [reactions, setReactions] = useState({
-    agreeCount: 12400,
-    differCount: 1200,
+    agreeCount: stats?.agreeCount || 0,
+    differCount: stats?.differCount || 0,
     selected: null,
   });
 
   const [showOverlay, setShowOverlay] = useState(false);
+
+  // Update counts if stats change
+  useEffect(() => {
+    setReactions((prev) => ({
+      ...prev,
+      agreeCount: stats?.agreeCount || 0,
+      differCount: stats?.differCount || 0,
+    }));
+  }, [stats]);
 
   const formatCount = (num) => {
     if (num >= 1000) return (num / 1000).toFixed(1) + "k";
@@ -17,7 +26,7 @@ const ReactionBar = () => {
   };
 
   const handleReaction = (type) => {
-    if (type === "differ") setShowOverlay(true); // open overlay on differ click
+    if (type === "differ") setShowOverlay(true); // open overlay on Differ click
 
     setReactions((prev) => ({
       ...prev,
@@ -29,7 +38,7 @@ const ReactionBar = () => {
 
   return (
     <>
-      <div className="bg-[#F5F9FF] flex items-center justify-between px-6 py-3 rounded-md shadow-sm max-w-sm mx-auto">
+      <div className="bg-[#F5F9FF] flex items-center justify-between px-6 py-3 rounded-md shadow-sm  mx-auto">
         {/* Agree */}
         <div
           onClick={() => handleReaction("agree")}
@@ -57,13 +66,20 @@ const ReactionBar = () => {
           <div className="bg-green-600 rounded-full p-2">
             <MessageCirclePlus className="w-5 h-5 text-white" />
           </div>
-          <p className="text-xs font-medium mt-1 text-gray-700">
+          <p className="text-xs font-medium mt-1 text-white">
             {formatCount(reactions.differCount)}
           </p>
         </div>
       </div>
 
-      {showOverlay && < CommentBox onClose={() => setShowOverlay(false)} />}
+      {/* Comment overlay */}
+      {showOverlay && (
+        <CommentBox
+          onClose={() => setShowOverlay(false)}
+          debate={debate}
+          stats={stats}
+        />
+      )}
     </>
   );
 };

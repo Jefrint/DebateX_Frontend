@@ -18,7 +18,7 @@ const Home = () => {
  <ReactionBar/>
  <DifferReactionBar/>
 
-<CommentCard />
+
     </>
   )
 }
