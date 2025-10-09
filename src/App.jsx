@@ -6,6 +6,7 @@ import ExploreDebates from './pages/ExploreDebates';
 import Footer from "./components/Footer"; 
 import Signup from "./pages/Signup";
 import LoginPage from "./pages/LoginPage";
+import AdminDashboard from './pages/AdminDashboard';
 
 function App() {
   
@@ -22,6 +23,7 @@ function App() {
         <Route path="/exploredebates" element={<ExploreDebates />} />
          <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/admin" element={<AdminDashboard/>} />
 
       </Routes>
       <Footer/>

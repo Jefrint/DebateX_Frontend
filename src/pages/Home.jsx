@@ -1,9 +1,10 @@
 import React from 'react'
-import Int_Article from '../components/Int_Article'
 
-import ActiveDebateHeader from '../components/ActiveDebateHeader'
-import PastDebates from '../components/PastDebates'
+import CommentCard from '../components/CommentCard'
+import ReactionBar from '../components/ReactionBar'
 import DifferReactionBar from '../components/DifferReactionBar'
+import ActiveDebateHeader from '../components/ActiveDebateHeader'
+import DebateCard from '../components/DebateCard'
 
 
 
@@ -13,9 +14,15 @@ const Home = () => {
     <>
     
     <div>Home</div>
-    <ActiveDebateHeader/>   
-  <Int_Article/>
-  <PastDebates/>
+    <ActiveDebateHeader/>
+  
+    <ReactionBar/>
+
+    <DifferReactionBar/>
+    
+    <CommentCard/>
+   
+  
 
     </>
   )
