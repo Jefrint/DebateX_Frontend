@@ -4,7 +4,8 @@ import CommentCard from '../components/CommentCard'
 import ReactionBar from '../components/ReactionBar'
 import DifferReactionBar from '../components/DifferReactionBar'
 import ActiveDebateHeader from '../components/ActiveDebateHeader'
-import DebateCard from '../components/DebateCard'
+import DifferReactionBar from "../components/DifferReactionBar"
+import ReactionBar from "../components/ReactionBar"
 
 
 
@@ -14,15 +15,10 @@ const Home = () => {
     <>
     
     <div>Home</div>
-    <ActiveDebateHeader/>
+    <ActiveDebateHeader/>   
   
-    <ReactionBar/>
-
-    <DifferReactionBar/>
-    
-    <CommentCard/>
-   
-  
+    <ReactionBar />       {/* For Agree section */}
+    <DifferReactionBar /> 
 
     </>
   )

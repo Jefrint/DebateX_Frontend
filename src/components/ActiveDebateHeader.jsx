@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
+import { MoreVertical } from "lucide-react";
 
 const ActiveDebateHeader = () => {
-  // Later this can come from backend API
-  const [debateData, setDebateData] = useState({
+  const [debateData] = useState({
     topic: "സ്മാർട്ട് ഫോൺ ഉപയോഗം വിദ്യാർത്ഥികളിൽ പാഠം മികവിന് സഹായകരമാണോ?",
     agreePercent: 20,
     differPercent: 80,
@@ -28,50 +28,49 @@ const ActiveDebateHeader = () => {
   };
 
   return (
-    <div className="bg-white shadow-sm border rounded-lg p-10 ">
+    <div className="bg-white shadow-md border rounded-xl px-6 py-6 sm:py-8 mb-6 max-w-5xl mx-auto">
       {/* Progress Bar */}
-      <div className="w-full h-2 bg-gray-200 rounded-full relative mb-3">
+      <div className="relative w-full h-2 bg-gray-200 rounded-full mb-4 overflow-hidden">
         <div
-          className="absolute left-0 top-0 h-2 bg-green-500 rounded-l-full"
+          className="absolute left-0 top-0 h-2 bg-green-500"
           style={{ width: `${debateData.agreePercent}%` }}
         ></div>
         <div
-          className="absolute right-0 top-0 h-2 bg-red-500 rounded-r-full"
+          className="absolute right-0 top-0 h-2 bg-red-500"
           style={{ width: `${debateData.differPercent}%` }}
         ></div>
       </div>
 
-      {/* Labels for progress */}
-      <div className="flex justify-between text-xs text-gray-600 mb-3">
-        <span className="text-green-600 font-medium">
+      {/* Percent Labels */}
+      <div className="flex justify-between text-sm mb-3">
+        <span className="text-green-600 font-semibold">
           {debateData.agreePercent}% Agree
         </span>
-        <span className="text-red-600 font-medium">
+        <span className="text-red-600 font-semibold">
           {debateData.differPercent}% Differ
         </span>
       </div>
 
-      {/* Debate Topic Section */}
-      <div className="flex items-start justify-between">
-        <h2 className="text-lg font-semibold text-gray-800 leading-snug max-w-[85%]">
+      {/* Topic and Timer */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between">
+        <h2 className="text-lg sm:text-xl font-semibold text-gray-900 leading-snug max-w-3xl">
           {debateData.topic}
         </h2>
 
-        <div className="text-right">
-          <p className="text-sm font-mono text-gray-700">
+        <div className="mt-3 sm:mt-0">
+          <p className="text-base font-mono text-gray-800 bg-gray-100 px-3 py-1 rounded-lg shadow-inner">
             {formatTime(timeRemaining)}
           </p>
         </div>
       </div>
 
-      {/* Bottom row */}
-      <div className="flex justify-between mt-2 text-sm text-gray-500">
-        <button className="text-blue-500 hover:underline">
-          See Translation
+      {/* Bottom Toolbar */}
+      <div className="flex justify-between items-center mt-4 text-sm text-gray-600">
+        <button className="text-blue-600 hover:underline">See Translation</button>
+
+        <button className="hover:text-gray-800 transition">
+          <MoreVertical className="w-5 h-5" />
         </button>
-        <div className="flex space-x-3">
-          <button className="hover:text-gray-700">⋮</button>
-        </div>
       </div>
     </div>
   );
