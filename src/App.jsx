@@ -23,6 +23,7 @@ function App() {
         <Route path="/" element={<ExploreDebates />} />
          <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/admin" element={<AdminDashboard/>} />
 
       </Routes>
       <Footer/>

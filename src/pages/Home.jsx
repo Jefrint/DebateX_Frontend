@@ -1,5 +1,8 @@
 import React from 'react'
 
+import CommentCard from '../components/CommentCard'
+import ReactionBar from '../components/ReactionBar'
+import DifferReactionBar from '../components/DifferReactionBar'
 import ActiveDebateHeader from '../components/ActiveDebateHeader'
 import DifferReactionBar from "../components/DifferReactionBar"
 import ReactionBar from "../components/ReactionBar"
