@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   ThumbsUp,
   ThumbsDown,
@@ -7,8 +7,12 @@ import {
   Flame,
 } from "lucide-react";
 
-const CommentCard = ({ comment }) => {
+const CommentCard = ({ comment, onLike, onDislike }) => {
   const [commentState, setCommentState] = useState(comment);
+
+  useEffect(() => {
+    setCommentState(comment);
+  }, [comment]);
 
   // Helper to format numbers like 12.1k, 100k
   const formatNumber = (num) => {
@@ -18,11 +22,37 @@ const CommentCard = ({ comment }) => {
   };
 
   // Action handlers
-  const handleLike = () =>
+  const handleLike = async () => {
     setCommentState((prev) => ({ ...prev, likes: prev.likes + 1 }));
+    try {
+      const response = await onLike?.(commentState);
+      if (response) {
+        setCommentState((prev) => ({
+          ...prev,
+          likes: response.likeCount ?? prev.likes,
+          dislikes: response.dislikeCount ?? prev.dislikes,
+        }));
+      }
+    } catch (error) {
+      setCommentState((prev) => ({ ...prev, likes: Math.max(0, prev.likes - 1) }));
+    }
+  };
 
-  const handleDislike = () =>
+  const handleDislike = async () => {
     setCommentState((prev) => ({ ...prev, dislikes: prev.dislikes + 1 }));
+    try {
+      const response = await onDislike?.(commentState);
+      if (response) {
+        setCommentState((prev) => ({
+          ...prev,
+          likes: response.likeCount ?? prev.likes,
+          dislikes: response.dislikeCount ?? prev.dislikes,
+        }));
+      }
+    } catch (error) {
+      setCommentState((prev) => ({ ...prev, dislikes: Math.max(0, prev.dislikes - 1) }));
+    }
+  };
 
   const handleReply = () =>
     setCommentState((prev) => ({ ...prev, replies: prev.replies + 1 }));

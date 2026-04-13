@@ -28,7 +28,7 @@ const PastDebates = ({ debate }) => {
 
       {/* Date and Time */}
       <p className="text-xs text-gray-500">
-        {debate.date}, {debate.time}
+        {[debate.date, debate.time].filter(Boolean).join(", ")}
       </p>
     </div>
   );

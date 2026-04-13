@@ -1,111 +1,240 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import DebateHeader from "../components/ActiveDebateHeader";
 import CommentCard from "../components/CommentCard";
 import DifferReactionBar from "../components/DifferReactionBar";
 import ReactionBar from "../components/ReactionBar";
+import { addComment, fetchDebateDetails, reactToComment } from "../services/debates";
+
+function getSecondsUntil(endTime) {
+  if (!endTime) {
+    return 0;
+  }
+
+  const diffMs = new Date(endTime).getTime() - Date.now();
+  return diffMs > 0 ? Math.floor(diffMs / 1000) : 0;
+}
 
 const DebateDiscussionPage = () => {
-  // Mock data
-  const debate = {
-    title: "സ്മാർട്ട് ഫോൺ ഉപയോഗം വിദ്യാർത്ഥികളിൽ പാഠം തിരിച്ചടിയാക്കുമോ?",
-    agreePercent: 20,
-    differPercent: 80,
-    timeRemaining: "02:30:28",
+  const { debateId } = useParams();
+  const [debate, setDebate] = useState(null);
+  const [comments, setComments] = useState({ agree: [], differ: [] });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [submittingSide, setSubmittingSide] = useState("");
+  const [commentDrafts, setCommentDrafts] = useState({
+    agreeAuthor: "",
+    agreeText: "",
+    differAuthor: "",
+    differText: "",
+  });
+
+  useEffect(() => {
+    const loadDebate = async () => {
+      try {
+        setLoading(true);
+        setError("");
+        const response = await fetchDebateDetails(debateId);
+        setDebate(response.debate);
+        setComments(response.comments);
+      } catch (err) {
+        setError(err.message || "Unable to load debate details.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadDebate();
+  }, [debateId]);
+
+  const handleCommentReaction = async (comment, reaction) => {
+    try {
+      return await reactToComment({
+        debateId,
+        commentId: comment.id,
+        reaction,
+      });
+    } catch (err) {
+      setError(err.message || "Unable to submit reaction.");
+      throw err;
+    }
   };
 
-  const comments = {
-    Agree: [
-      {
-        user: "Sam",
-        tag: "Top Contributor",
-        trending: true,
-        time: "10m ago",
-        text: "സ്മാർട്ട് ഫോൺ വിദ്യാർത്ഥികളുടെ പഠനത്തിൽ പാഠം തിരിച്ചടിയാക്കുന്നു. അവർ കൂടുതൽ സമയം സോഷ്യൽ മീഡിയയിലും ഗെയിംസിലും ചെലവഴിക്കുന്നു.",
-        likes: 12100,
-        dislikes: 200,
-        replies: 620,
-      },
-      {
-        user: "Anu",
-        tag: "Active Participant",
-        trending: false,
-        time: "30m ago",
-        text: "വിദ്യാർത്ഥികൾക്ക് നിയന്ത്രണം ഇല്ലാതെ ഫോൺ ഉപയോഗിക്കുന്നത് വളരെ അപകടകരമാണ്.",
-        likes: 5300,
-        dislikes: 100,
-        replies: 120,
-      },
-    ],
-    Differ: [
-      {
-        user: "Athul S",
-        tag: null,
-        trending: false,
-        time: "10m ago",
-        text: "മൊബൈൽ ഫോൺ അതിന്റെ ശരിയായ ഉപയോഗം വിദ്യാർത്ഥികൾക്ക് എളുപ്പത്തിൽ പഠിക്കാൻ സഹായിക്കുന്നു. ഓൺലൈൻ ക്ലാസുകളും ഗവേഷണത്തിനും അനിവാര്യമാണ്.",
-        likes: 12100,
-        dislikes: 100,
-        replies: 620,
-      },
-      {
-        user: "Nisha",
-        tag: "Educator",
-        trending: true,
-        time: "25m ago",
-        text: "സാങ്കേതിക വിദ്യ പഠന പ്രക്രിയയിൽ വിദ്യാർത്ഥികളെ കൂടുതൽ ആകർഷിക്കുന്നു.",
-        likes: 8400,
-        dislikes: 220,
-        replies: 210,
-      },
-    ],
+  const handleDraftChange = (field, value) => {
+    setCommentDrafts((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
   };
+
+  const handleSubmitComment = async (side) => {
+    const isAgree = side === debate?.sideA;
+    const authorField = isAgree ? "agreeAuthor" : "differAuthor";
+    const textField = isAgree ? "agreeText" : "differText";
+    const commentText = commentDrafts[textField].trim();
+
+    if (!commentText) {
+      setError("Please write a comment before posting.");
+      return;
+    }
+
+    try {
+      setSubmittingSide(side);
+      setError("");
+      const response = await addComment({
+        debateId,
+        side,
+        authorName: commentDrafts[authorField].trim() || "Anonymous",
+        commentText,
+      });
+
+      if (response.visibleInDebate && response.comment) {
+        const normalized = {
+          id: response.comment.commentId,
+          side: response.comment.side,
+          text: response.comment.commentText,
+          time: response.comment.createdAt,
+          likes: response.comment.likeCount || 0,
+          dislikes: response.comment.dislikeCount || 0,
+          replies: 0,
+          shares: 0,
+          user: {
+            name: response.comment.authorName || "Anonymous",
+            role: "",
+            avatar: "",
+          },
+        };
+
+        setComments((prev) => ({
+          ...prev,
+          agree:
+            side === debate.sideA ? [...prev.agree, normalized] : prev.agree,
+          differ:
+            side === debate.sideB ? [...prev.differ, normalized] : prev.differ,
+        }));
+      }
+
+      setCommentDrafts((prev) => ({
+        ...prev,
+        [textField]: "",
+      }));
+    } catch (err) {
+      setError(err.message || "Unable to submit comment.");
+    } finally {
+      setSubmittingSide("");
+    }
+  };
+
+  if (loading) {
+    return <div className="max-w-6xl mx-auto px-4 py-8">Loading debate...</div>;
+  }
+
+  if (error && !debate) {
+    return <div className="max-w-6xl mx-auto px-4 py-8 text-red-600">{error}</div>;
+  }
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
-      {/* Debate Header */}
+      {error ? <p className="mb-4 text-sm text-red-600">{error}</p> : null}
+
       <DebateHeader
-        title={debate.title}
-        agreePercent={debate.agreePercent}
-        differPercent={debate.differPercent}
-        timeRemaining={debate.timeRemaining}
+        title={debate?.title}
+        agreePercent={debate?.agreePercent}
+        differPercent={debate?.differPercent}
+        initialTimeLeft={getSecondsUntil(debate?.endTime)}
       />
 
-      {/* Two-column Debate Section */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
-        {/* Agree Column */}
-        <div className="p-4 ">
-          
-          <div className=" mb-6">
-            <ReactionBar />
+        <div className="p-4">
+          <div className="mb-6">
+            <ReactionBar
+              agreeCount={comments.agree.length}
+              differCount={comments.differ.length}
+            />
+          </div>
+          <div className="bg-white border rounded-xl p-4 mb-6">
+            <h3 className="font-semibold text-gray-800 mb-3">{debate?.sideA}</h3>
+            <input
+              type="text"
+              value={commentDrafts.agreeAuthor}
+              onChange={(e) => handleDraftChange("agreeAuthor", e.target.value)}
+              placeholder="Your name"
+              className="w-full border rounded-md p-2 text-sm mb-3"
+            />
+            <textarea
+              value={commentDrafts.agreeText}
+              onChange={(e) => handleDraftChange("agreeText", e.target.value)}
+              placeholder={`Write your ${debate?.sideA?.toLowerCase() || "agree"} comment`}
+              rows={4}
+              className="w-full border rounded-md p-3 text-sm"
+            />
+            <button
+              onClick={() => handleSubmitComment(debate?.sideA)}
+              disabled={submittingSide === debate?.sideA}
+              className="mt-3 bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 disabled:opacity-60"
+            >
+              {submittingSide === debate?.sideA ? "Posting..." : "Post Comment"}
+            </button>
           </div>
           <div className="space-y-4">
-            {comments.Agree.length > 0 ? (
-              comments.Agree.map((comment, i) => (
-                <CommentCard key={i} comment={comment} />
+            {comments.agree.length > 0 ? (
+              comments.agree.map((comment) => (
+                <CommentCard
+                  key={comment.id || comment.text}
+                  comment={comment}
+                  onLike={(current) => handleCommentReaction(current, "LIKE")}
+                  onDislike={(current) => handleCommentReaction(current, "DISLIKE")}
+                />
               ))
             ) : (
-              <p className="text-center text-gray-500">
-                No comments for Agree yet.
-              </p>
+              <p className="text-center text-gray-500">No comments for {debate?.sideA} yet.</p>
             )}
           </div>
         </div>
 
-        {/* Differ Column */}
-        <div className=" p-4 ">
-          
-          <div className=" mb-6">
-            <DifferReactionBar />
+        <div className="p-4">
+          <div className="mb-6">
+            <DifferReactionBar
+              differCount={comments.differ.length}
+              agreeCount={comments.agree.length}
+            />
+          </div>
+          <div className="bg-white border rounded-xl p-4 mb-6">
+            <h3 className="font-semibold text-gray-800 mb-3">{debate?.sideB}</h3>
+            <input
+              type="text"
+              value={commentDrafts.differAuthor}
+              onChange={(e) => handleDraftChange("differAuthor", e.target.value)}
+              placeholder="Your name"
+              className="w-full border rounded-md p-2 text-sm mb-3"
+            />
+            <textarea
+              value={commentDrafts.differText}
+              onChange={(e) => handleDraftChange("differText", e.target.value)}
+              placeholder={`Write your ${debate?.sideB?.toLowerCase() || "differ"} comment`}
+              rows={4}
+              className="w-full border rounded-md p-3 text-sm"
+            />
+            <button
+              onClick={() => handleSubmitComment(debate?.sideB)}
+              disabled={submittingSide === debate?.sideB}
+              className="mt-3 bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 disabled:opacity-60"
+            >
+              {submittingSide === debate?.sideB ? "Posting..." : "Post Comment"}
+            </button>
           </div>
           <div className="space-y-4">
-            {comments.Differ.length > 0 ? (
-              comments.Differ.map((comment, i) => (
-                <CommentCard key={i} comment={comment} />
+            {comments.differ.length > 0 ? (
+              comments.differ.map((comment) => (
+                <CommentCard
+                  key={comment.id || comment.text}
+                  comment={comment}
+                  onLike={(current) => handleCommentReaction(current, "LIKE")}
+                  onDislike={(current) => handleCommentReaction(current, "DISLIKE")}
+                />
               ))
             ) : (
-              <p className="text-center text-gray-500">
-                No comments for Differ yet.
-              </p>
+              <p className="text-center text-gray-500">No comments for {debate?.sideB} yet.</p>
             )}
           </div>
         </div>

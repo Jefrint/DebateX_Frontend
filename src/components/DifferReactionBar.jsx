@@ -1,13 +1,20 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ThumbsDown, MessageCirclePlus } from "lucide-react"; // using red icons
 
-const DifferReactionBar = () => {
-  // Hardcoded data for now
+const DifferReactionBar = ({ differCount = 0, agreeCount = 0, onReact }) => {
   const [reactions, setReactions] = useState({
-    differCount: 5600,
-    agreeCount: 12400,
+    differCount,
+    agreeCount,
     selected: null, // "agree" or "differ"
   });
+
+  useEffect(() => {
+    setReactions((prev) => ({
+      ...prev,
+      differCount,
+      agreeCount,
+    }));
+  }, [differCount, agreeCount]);
 
   const formatCount = (num) => {
     if (num >= 1000) return (num / 1000).toFixed(1) + "K";
@@ -23,6 +30,7 @@ const DifferReactionBar = () => {
       agreeCount:
         type === "agree" ? prev.agreeCount + 1 : prev.agreeCount,
     }));
+    onReact?.(type);
   };
 
   return (
@@ -38,7 +46,7 @@ const DifferReactionBar = () => {
           <ThumbsDown className="w-5 h-5 text-red-600" />
         </div>
         <p className="text-xs font-medium mt-1">
-          {formatCount(reactions.agreeCount)}
+          {formatCount(reactions.differCount)}
         </p>
       </div>
 
@@ -47,14 +55,14 @@ const DifferReactionBar = () => {
 
       {/* Right - Comment (Chat Plus Icon) */}
       <div
-        onClick={() => handleReaction("comment")}
+        onClick={() => handleReaction("agree")}
         className="flex flex-col items-center cursor-pointer text-gray-700"
       >
         <div className="bg-red-600 rounded-full p-2">
           <MessageCirclePlus className="w-5 h-5 text-white" />
         </div>
         <p className="text-xs font-medium mt-1 text-gray-700">
-          {formatCount(reactions.differCount)}
+          {formatCount(reactions.agreeCount)}
         </p>
       </div>
     </div>

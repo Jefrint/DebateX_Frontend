@@ -1,15 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { MoreVertical } from "lucide-react";
 
-const ActiveDebateHeader = () => {
-  const [debateData] = useState({
-    topic: "സ്മാർട്ട് ഫോൺ ഉപയോഗം വിദ്യാർത്ഥികളിൽ പാഠം മികവിന് സഹായകരമാണോ?",
-    agreePercent: 20,
-    differPercent: 80,
-    timeLeft: 2 * 60 * 60 + 30 * 60 + 28, // 2 hours 30 mins 28 sec
-  });
+const ActiveDebateHeader = ({
+  title = "Debate topic",
+  agreePercent = 0,
+  differPercent = 0,
+  initialTimeLeft = 0,
+}) => {
+  const [timeRemaining, setTimeRemaining] = useState(initialTimeLeft);
 
-  const [timeRemaining, setTimeRemaining] = useState(debateData.timeLeft);
+  useEffect(() => {
+    setTimeRemaining(initialTimeLeft);
+  }, [initialTimeLeft]);
 
   // Timer countdown effect
   useEffect(() => {
@@ -33,28 +35,28 @@ const ActiveDebateHeader = () => {
       <div className="relative w-full h-2 bg-gray-200 rounded-full mb-4 overflow-hidden">
         <div
           className="absolute left-0 top-0 h-2 bg-green-500"
-          style={{ width: `${debateData.agreePercent}%` }}
+          style={{ width: `${agreePercent}%` }}
         ></div>
         <div
           className="absolute right-0 top-0 h-2 bg-red-500"
-          style={{ width: `${debateData.differPercent}%` }}
+          style={{ width: `${differPercent}%` }}
         ></div>
       </div>
 
       {/* Percent Labels */}
       <div className="flex justify-between text-sm mb-3">
         <span className="text-green-600 font-semibold">
-          {debateData.agreePercent}% Agree
+          {agreePercent}% Agree
         </span>
         <span className="text-red-600 font-semibold">
-          {debateData.differPercent}% Differ
+          {differPercent}% Differ
         </span>
       </div>
 
       {/* Topic and Timer */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between">
         <h2 className="text-lg sm:text-xl font-semibold text-gray-900 leading-snug max-w-3xl">
-          {debateData.topic}
+          {title}
         </h2>
 
         <div className="mt-3 sm:mt-0">

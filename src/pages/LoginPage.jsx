@@ -1,15 +1,19 @@
 import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { loginUser } from "../services/debates";
 
 const LoginPage = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
@@ -18,11 +22,19 @@ const LoginPage = () => {
       return;
     }
 
-    // Mock login logic (replace with backend API call)
-    if (formData.email === "test@example.com" && formData.password === "123456") {
-      alert("Login successful!");
-    } else {
-      setError("Invalid email or password.");
+    try {
+      setLoading(true);
+      const response = await loginUser(formData);
+
+      if (response?.token) {
+        localStorage.setItem("debatex_token", response.token);
+      }
+
+      navigate("/");
+    } catch (err) {
+      setError(err.message || "Invalid email or password.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -58,18 +70,20 @@ const LoginPage = () => {
             />
           </div>
 
-         
           <button
             type="submit"
-            className="w-full py-2 text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition duration-200"
+            disabled={loading}
+            className="w-full py-2 text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition duration-200 disabled:opacity-60"
           >
-            Login
+            {loading ? "Logging in..." : "Login"}
           </button>
         </form>
 
         <p className="text-sm text-center text-gray-600 mt-4">
-          Don't have an account?{' '}
-          <a href="/signup" className="text-indigo-600 hover:underline">Create account</a>
+          Don't have an account?{" "}
+          <Link to="/signup" className="text-indigo-600 hover:underline">
+            Create account
+          </Link>
         </p>
       </div>
     </div>

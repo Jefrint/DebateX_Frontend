@@ -1,6 +1,9 @@
 import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { signupUser } from "../services/debates";
 
 const Signup = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -9,13 +12,14 @@ const Signup = () => {
   });
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setSuccess("");
@@ -30,9 +34,22 @@ const Signup = () => {
       return;
     }
 
-    // Mock successful signup (you can replace with actual API call)
-    setSuccess("Signup successful! Welcome, " + formData.name + " ✨");
-    setFormData({ name: "", email: "", password: "", confirmPassword: "" });
+    try {
+      setLoading(true);
+      await signupUser({
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+      });
+
+      setSuccess(`Signup successful. Welcome, ${formData.name}.`);
+      setFormData({ name: "", email: "", password: "", confirmPassword: "" });
+      setTimeout(() => navigate("/login"), 800);
+    } catch (err) {
+      setError(err.message || "Unable to sign up right now.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -94,15 +111,18 @@ const Signup = () => {
 
           <button
             type="submit"
-            className="w-full py-2 text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition duration-200"
+            disabled={loading}
+            className="w-full py-2 text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition duration-200 disabled:opacity-60"
           >
-            Sign Up
+            {loading ? "Signing up..." : "Sign Up"}
           </button>
         </form>
 
         <p className="text-sm text-center text-gray-600">
-          Already have an account?{' '}
-          <a href="/login" className="text-indigo-600 hover:underline">Sign in</a>
+          Already have an account?{" "}
+          <Link to="/login" className="text-indigo-600 hover:underline">
+            Sign in
+          </Link>
         </p>
       </div>
     </div>

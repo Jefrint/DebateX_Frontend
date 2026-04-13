@@ -1,16 +1,56 @@
-# React + Vite
+# DebateX Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This frontend is now wired to call a backend through a shared API layer instead of hardcoded mock data.
 
-Currently, two official plugins are available:
+## Setup
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+1. Copy `.env.example` to `.env`
+2. Set `VITE_API_BASE_URL` to your API Gateway base URL
+3. Update any endpoint paths if your Lambda routes use different paths
+4. Run `npm install`
+5. Run `npm run dev`
 
-## React Compiler
+## Environment Variables
 
-The React Compiler is not enabled on this template. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- `VITE_API_BASE_URL`: API Gateway base URL
+- `VITE_API_EXPLORE_DEBATES`: debate listing endpoint
+- `VITE_API_DEBATE_DETAILS`: single debate endpoint, use `:id` placeholder
+- `VITE_API_DEBATE_REACT`: comment reaction endpoint
+- `VITE_API_DEBATE_COMMENTS`: add-comment endpoint
+- `VITE_API_LOGIN`: login endpoint
+- `VITE_API_SIGNUP`: signup endpoint
+- `VITE_API_ADMIN_ARTICLES`: admin article list endpoint
+- `VITE_API_AI_TOPICS`: AI title generation endpoint
+- `VITE_API_CREATE_DEBATE`: create debate endpoint
 
-## Expanding the ESLint configuration
+## Expected Response Shapes
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+The frontend currently expects flexible JSON and normalizes a few possible field names.
+
+Explore page:
+
+```json
+{
+  "debates": []
+}
+```
+
+Debate details page:
+
+```json
+{
+  "debate": {},
+  "comments": []
+}
+```
+
+Admin title generation:
+
+```json
+{
+  "articleUrl": "https://www.manoramaonline.com/...",
+  "titles": ["Title 1", "Title 2", "Title 3", "Title 4"]
+}
+```
+
+If your backend payload names differ, update `src/services/debates.js`.

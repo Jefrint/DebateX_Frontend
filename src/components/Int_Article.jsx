@@ -5,7 +5,7 @@ const Int_Article = ({ article }) => {
     <div className="  flex items-start bg-white rounded-xl shadow-md overflow-hidden border border-gray-200">
       {/* Image */}
       <img
-        src={article.image}
+        src={article.image || "https://via.placeholder.com/96x96?text=News"}
         alt={article.title}
         className="w-24 h-24 object-cover"
       />

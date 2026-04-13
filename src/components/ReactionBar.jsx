@@ -1,13 +1,20 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ThumbsUp, MessageCirclePlus } from "lucide-react"; // for icons (optional)
 
-const ReactionBar = () => {
-  // Temporary hardcoded data (replace later with backend data)
+const ReactionBar = ({ agreeCount = 0, differCount = 0, onReact }) => {
   const [reactions, setReactions] = useState({
-    agreeCount: 12400,
-    differCount: 1200,
+    agreeCount,
+    differCount,
     selected: null, // "agree" or "differ"
   });
+
+  useEffect(() => {
+    setReactions((prev) => ({
+      ...prev,
+      agreeCount,
+      differCount,
+    }));
+  }, [agreeCount, differCount]);
 
   // Format counts like 12.4k, 1.2k, etc.
   const formatCount = (num) => {
@@ -24,6 +31,7 @@ const ReactionBar = () => {
       differCount:
         type === "differ" ? prev.differCount + 1 : prev.differCount,
     }));
+    onReact?.(type);
   };
 
   return (

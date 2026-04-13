@@ -1,30 +1,25 @@
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Home from "./pages/Home";
-import LandingPage from "./pages/LandingPage";
-import Navbar from './components/navbar';
+import Navbar from './components/Navbar';
 import ExploreDebates from './pages/ExploreDebates';
 import Footer from "./components/Footer"; 
 import Signup from "./pages/Signup";
 import LoginPage from "./pages/LoginPage";
 import CommentPage from "./pages/CommentPage"
-function App() {
-  
+import AdminDashboard from './pages/AdminDashboard';
 
+function App() {
   return (
     <div className="App">
       <Navbar/>
-      
-      
-      <Routes>
-       
-      <Route path="/commentpage" element={<CommentPage />} />
 
+      <Routes>
+        <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/debates/:debateId" element={<CommentPage />} />
         <Route path="/home" element={<Home />} />
         <Route path="/" element={<ExploreDebates />} />
-         <Route path="/signup" element={<Signup />} />
+        <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/admin" element={<AdminDashboard/>} />
-
       </Routes>
       <Footer/>
     </div>

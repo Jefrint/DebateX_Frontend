@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const DebateCard = ({ debate }) => {
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   // Simulate loading effect (optional)
   useEffect(() => {
@@ -38,14 +40,17 @@ const DebateCard = ({ debate }) => {
 
       {/* Join Debate Button & Participants */}
       <div className="flex items-center justify-between">
-        <button className="bg-red-600 text-white px-5 py-2 rounded-md font-medium hover:bg-red-700">
+        <button
+          onClick={() => navigate(`/debates/${debate.id}`)}
+          className="bg-red-600 text-white px-5 py-2 rounded-md font-medium hover:bg-red-700"
+        >
           Join Debate
         </button>
 
         <div className="flex items-center">
           {/* Avatars */}
           <div className="flex -space-x-2">
-            {debate.images.map((avatar, idx) => (
+            {(debate.images || []).map((avatar, idx) => (
               <img
                 key={idx}
                 className="w-8 h-8 rounded-full border border-white"
