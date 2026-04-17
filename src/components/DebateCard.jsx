@@ -19,9 +19,14 @@ const DebateCard = ({ debate }) => {
       {/* Debate Question */}
       <div className="flex items-center justify-between mb-2">
         <h2 className="text-lg font-semibold text-gray-800">{debate.title}</h2>
-        <span className="bg-green-500 text-white text-xs font-bold px-2 py-1 rounded">
-          {debate.status}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="bg-blue-100 text-blue-700 text-xs font-bold px-2 py-1 rounded">
+            {debate.category}
+          </span>
+          <span className="bg-green-500 text-white text-xs font-bold px-2 py-1 rounded">
+            {debate.status}
+          </span>
+        </div>
       </div>
 
       <p className="text-sm text-gray-600 mb-4">{debate.description}</p>

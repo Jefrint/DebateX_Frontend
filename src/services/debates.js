@@ -10,6 +10,7 @@ const endpoints = {
   adminArticles: getConfiguredEndpoint("VITE_API_ADMIN_ARTICLES", "/admin/articles"),
   aiTopics: getConfiguredEndpoint("VITE_API_AI_TOPICS", "/debate/generatetitle"),
   createDebate: getConfiguredEndpoint("VITE_API_CREATE_DEBATE", "/debate"),
+  cancelDebate: getConfiguredEndpoint("VITE_API_CANCEL_DEBATE", "/debate/cancel?debateId=:id"),
 };
 
 function withDebateId(template, debateId) {
@@ -176,6 +177,11 @@ export async function fetchExploreDebates() {
   };
 }
 
+export async function fetchAllDebates() {
+  const payload = await apiRequest(endpoints.explore);
+  return (payload.debates || payload.ongoing || payload.live || []).map(normalizeExploreDebate);
+}
+
 export async function fetchDebateDetails(debateId) {
   const payload = await apiRequest(withDebateId(endpoints.debateDetails, debateId));
   const debate = normalizeExploreDebate(payload.debate || payload);
@@ -242,5 +248,11 @@ export async function createDebate(payload) {
   return apiRequest(endpoints.createDebate, {
     method: "POST",
     body: JSON.stringify(payload),
+  });
+}
+
+export async function cancelDebate(debateId) {
+  return apiRequest(withDebateId(endpoints.cancelDebate, debateId), {
+    method: "POST",
   });
 }

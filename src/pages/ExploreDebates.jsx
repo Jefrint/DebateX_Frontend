@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import OngoingDebateCard from "../components/DebateCard";
 import UpcomingDebateCard from "../components/Up_Debates";
 import InterestedArticleCard from "../components/Int_Article";
@@ -12,6 +13,8 @@ const categories = [
   "Health and Science",
   "Business and Economy",
   "Technology",
+  "Sports",
+  "General",
 ];
 
 const ExploreDebates = () => {
@@ -20,6 +23,7 @@ const ExploreDebates = () => {
   const pastRef = useRef(null);
 
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const [activeOngoingIndex, setActiveOngoingIndex] = useState(0);
   const [data, setData] = useState({
     ongoing: [],
     upcoming: [],
@@ -46,16 +50,47 @@ const ExploreDebates = () => {
     loadDebates();
   }, []);
 
-  const filteredDebates = useMemo(() => {
+  const filterByCategory = (debates) => {
     if (selectedCategory === "All") {
-      return data.upcoming;
+      return debates;
     }
 
-    return data.upcoming.filter((debate) => debate.category === selectedCategory);
-  }, [data.upcoming, selectedCategory]);
+    return debates.filter((debate) => debate.category === selectedCategory);
+  };
+
+  const filteredOngoingDebates = useMemo(
+    () => filterByCategory(data.ongoing),
+    [data.ongoing, selectedCategory]
+  );
+
+  const filteredUpcomingDebates = useMemo(
+    () => filterByCategory(data.upcoming),
+    [data.upcoming, selectedCategory]
+  );
+
+  const filteredPastDebates = useMemo(
+    () => filterByCategory(data.past),
+    [data.past, selectedCategory]
+  );
+
+  useEffect(() => {
+    setActiveOngoingIndex(0);
+  }, [selectedCategory, filteredOngoingDebates.length]);
 
   const handleScroll = (ref) => {
     ref.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  const goToPreviousOngoing = () => {
+    setActiveOngoingIndex((current) =>
+      current === 0 ? filteredOngoingDebates.length - 1 : current - 1
+    );
+  };
+
+  const goToNextOngoing = () => {
+    setActiveOngoingIndex((current) =>
+      current === filteredOngoingDebates.length - 1 ? 0 : current + 1
+    );
   };
 
   if (loading) {
@@ -96,13 +131,58 @@ const ExploreDebates = () => {
       </div>
 
       <section ref={ongoingRef} id="ongoing">
-        <h2 className="text-lg font-semibold text-gray-800 mb-4">
-          Ongoing Debates ({data.ongoing.length})
-        </h2>
-        {data.ongoing.length > 0 ? (
-          <OngoingDebateCard debate={data.ongoing[0]} />
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
+          <h2 className="text-lg font-semibold text-gray-800">
+            Ongoing Debates ({filteredOngoingDebates.length})
+          </h2>
+
+          {filteredOngoingDebates.length > 1 ? (
+            <div className="flex items-center gap-2">
+              <button
+                onClick={goToPreviousOngoing}
+                className="p-2 rounded-full border text-gray-700 hover:bg-gray-100"
+                aria-label="Previous ongoing debate"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <span className="text-sm text-gray-600">
+                {activeOngoingIndex + 1} / {filteredOngoingDebates.length}
+              </span>
+              <button
+                onClick={goToNextOngoing}
+                className="p-2 rounded-full border text-gray-700 hover:bg-gray-100"
+                aria-label="Next ongoing debate"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          ) : null}
+        </div>
+
+        {filteredOngoingDebates.length > 0 ? (
+          <div>
+            <OngoingDebateCard debate={filteredOngoingDebates[activeOngoingIndex]} />
+            {filteredOngoingDebates.length > 1 ? (
+              <div className="flex justify-center gap-2 mt-4">
+                {filteredOngoingDebates.map((debate, index) => (
+                  <button
+                    key={debate.id || debate.title}
+                    onClick={() => setActiveOngoingIndex(index)}
+                    className={`h-2.5 rounded-full transition-all ${
+                      activeOngoingIndex === index
+                        ? "w-8 bg-red-600"
+                        : "w-2.5 bg-gray-300 hover:bg-gray-400"
+                    }`}
+                    aria-label={`Show ongoing debate ${index + 1}`}
+                  />
+                ))}
+              </div>
+            ) : null}
+          </div>
         ) : (
-          <p className="text-gray-500">No ongoing debates available.</p>
+          <p className="text-gray-500">
+            No ongoing debates available{selectedCategory === "All" ? "." : ` for ${selectedCategory}.`}
+          </p>
         )}
       </section>
 
@@ -128,8 +208,8 @@ const ExploreDebates = () => {
         </div>
 
         <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
-          {filteredDebates.length > 0 ? (
-            filteredDebates.map((debate) => (
+          {filteredUpcomingDebates.length > 0 ? (
+            filteredUpcomingDebates.map((debate) => (
               <UpcomingDebateCard key={debate.id || debate.title} debate={debate} />
             ))
           ) : (
@@ -160,12 +240,14 @@ const ExploreDebates = () => {
           Past Debates
         </h2>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {data.past.length > 0 ? (
-            data.past.map((debate) => (
+          {filteredPastDebates.length > 0 ? (
+            filteredPastDebates.map((debate) => (
               <PastDebateCard key={debate.id || debate.title} debate={debate} />
             ))
           ) : (
-            <p className="text-gray-500">No past debates available.</p>
+            <p className="text-gray-500">
+              No past debates available{selectedCategory === "All" ? "." : ` for ${selectedCategory}.`}
+            </p>
           )}
         </div>
       </section>

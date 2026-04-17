@@ -8,20 +8,24 @@ const PastDebates = ({ debate }) => {
         {debate.title}
       </h3>
 
+      <span className="inline-block px-3 py-1 text-xs rounded-full bg-blue-100 text-blue-700 font-medium mb-3">
+        {debate.category}
+      </span>
+
       {/* Progress Bar */}
       <div className="mb-3">
         <div className="flex justify-between text-sm text-gray-600 mb-1">
-          <span className="text-green-600">{debate.agree}% Agree</span>
-          <span className="text-red-600">{debate.differ}% Differ</span>
+          <span className="text-green-600">{debate.agreePercent}% Agree</span>
+          <span className="text-red-600">{debate.differPercent}% Differ</span>
         </div>
         <div className="w-full h-2 bg-gray-200 rounded-full flex">
           <div
             className="h-2 bg-green-500 rounded-l-full"
-            style={{ width: `${debate.agree}%` }}
+            style={{ width: `${debate.agreePercent}%` }}
           ></div>
           <div
             className="h-2 bg-red-500 rounded-r-full"
-            style={{ width: `${debate.differ}%` }}
+            style={{ width: `${debate.differPercent}%` }}
           ></div>
         </div>
       </div>
