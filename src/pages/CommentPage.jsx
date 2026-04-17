@@ -23,9 +23,7 @@ const DebateDiscussionPage = () => {
   const [error, setError] = useState("");
   const [submittingSide, setSubmittingSide] = useState("");
   const [commentDrafts, setCommentDrafts] = useState({
-    agreeAuthor: "",
     agreeText: "",
-    differAuthor: "",
     differText: "",
   });
 
@@ -69,7 +67,6 @@ const DebateDiscussionPage = () => {
 
   const handleSubmitComment = async (side) => {
     const isAgree = side === debate?.sideA;
-    const authorField = isAgree ? "agreeAuthor" : "differAuthor";
     const textField = isAgree ? "agreeText" : "differText";
     const commentText = commentDrafts[textField].trim();
 
@@ -84,7 +81,6 @@ const DebateDiscussionPage = () => {
       const response = await addComment({
         debateId,
         side,
-        authorName: commentDrafts[authorField].trim() || "Anonymous",
         commentText,
       });
 
@@ -154,13 +150,9 @@ const DebateDiscussionPage = () => {
           </div>
           <div className="bg-white border rounded-xl p-4 mb-6">
             <h3 className="font-semibold text-gray-800 mb-3">{debate?.sideA}</h3>
-            <input
-              type="text"
-              value={commentDrafts.agreeAuthor}
-              onChange={(e) => handleDraftChange("agreeAuthor", e.target.value)}
-              placeholder="Your name"
-              className="w-full border rounded-md p-2 text-sm mb-3"
-            />
+            <p className="text-xs text-gray-500 mb-3">
+              Your signed-in profile name will be used automatically.
+            </p>
             <textarea
               value={commentDrafts.agreeText}
               onChange={(e) => handleDraftChange("agreeText", e.target.value)}
@@ -201,13 +193,9 @@ const DebateDiscussionPage = () => {
           </div>
           <div className="bg-white border rounded-xl p-4 mb-6">
             <h3 className="font-semibold text-gray-800 mb-3">{debate?.sideB}</h3>
-            <input
-              type="text"
-              value={commentDrafts.differAuthor}
-              onChange={(e) => handleDraftChange("differAuthor", e.target.value)}
-              placeholder="Your name"
-              className="w-full border rounded-md p-2 text-sm mb-3"
-            />
+            <p className="text-xs text-gray-500 mb-3">
+              Your signed-in profile name will be used automatically.
+            </p>
             <textarea
               value={commentDrafts.differText}
               onChange={(e) => handleDraftChange("differText", e.target.value)}
