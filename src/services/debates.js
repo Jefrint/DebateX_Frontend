@@ -135,6 +135,7 @@ function normalizeComment(item = {}) {
     time: item.time || item.createdAtLabel || item.createdAt || "",
     likes: Number(item.likes || item.likeCount || 0),
     dislikes: Number(item.dislikes || item.dislikeCount || 0),
+    userReaction: item.userReaction || null,
     replies: Number(item.replies || item.replyCount || 0),
     shares: Number(item.shares || item.shareCount || 0),
     isTrending: Boolean(item.isTrending || item.trending),

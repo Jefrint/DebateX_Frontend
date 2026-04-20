@@ -9,6 +9,7 @@ import {
 
 const CommentCard = ({ comment, onLike, onDislike }) => {
   const [commentState, setCommentState] = useState(comment);
+  const [reacting, setReacting] = useState(false);
 
   useEffect(() => {
     setCommentState(comment);
@@ -21,38 +22,63 @@ const CommentCard = ({ comment, onLike, onDislike }) => {
     return num;
   };
 
-  // Action handlers
-  const handleLike = async () => {
-    setCommentState((prev) => ({ ...prev, likes: prev.likes + 1 }));
+  const getOptimisticReactionState = (state, reaction) => {
+    const currentReaction = state.userReaction || null;
+    const nextReaction = currentReaction === reaction ? null : reaction;
+    let nextLikes = state.likes || 0;
+    let nextDislikes = state.dislikes || 0;
+
+    if (currentReaction === "LIKE") {
+      nextLikes = Math.max(0, nextLikes - 1);
+    }
+
+    if (currentReaction === "DISLIKE") {
+      nextDislikes = Math.max(0, nextDislikes - 1);
+    }
+
+    if (nextReaction === "LIKE") {
+      nextLikes += 1;
+    }
+
+    if (nextReaction === "DISLIKE") {
+      nextDislikes += 1;
+    }
+
+    return {
+      ...state,
+      likes: nextLikes,
+      dislikes: nextDislikes,
+      userReaction: nextReaction,
+    };
+  };
+
+  const handleReaction = async (reaction) => {
+    const previousState = commentState;
+    const action = reaction === "LIKE" ? onLike : onDislike;
+
+    setReacting(true);
+    setCommentState((prev) => getOptimisticReactionState(prev, reaction));
+
     try {
-      const response = await onLike?.(commentState);
+      const response = await action?.(previousState);
       if (response) {
         setCommentState((prev) => ({
           ...prev,
           likes: response.likeCount ?? prev.likes,
           dislikes: response.dislikeCount ?? prev.dislikes,
+          userReaction: response.userReaction ?? null,
         }));
       }
     } catch (error) {
-      setCommentState((prev) => ({ ...prev, likes: Math.max(0, prev.likes - 1) }));
+      setCommentState(previousState);
+    } finally {
+      setReacting(false);
     }
   };
 
-  const handleDislike = async () => {
-    setCommentState((prev) => ({ ...prev, dislikes: prev.dislikes + 1 }));
-    try {
-      const response = await onDislike?.(commentState);
-      if (response) {
-        setCommentState((prev) => ({
-          ...prev,
-          likes: response.likeCount ?? prev.likes,
-          dislikes: response.dislikeCount ?? prev.dislikes,
-        }));
-      }
-    } catch (error) {
-      setCommentState((prev) => ({ ...prev, dislikes: Math.max(0, prev.dislikes - 1) }));
-    }
-  };
+  const handleLike = () => handleReaction("LIKE");
+
+  const handleDislike = () => handleReaction("DISLIKE");
 
   const handleReply = () =>
     setCommentState((prev) => ({ ...prev, replies: prev.replies + 1 }));
@@ -106,9 +132,18 @@ const CommentCard = ({ comment, onLike, onDislike }) => {
           {/* Like */}
           <button
             onClick={handleLike}
-            className="flex items-center gap-1 text-green-600 hover:text-green-700"
+            disabled={reacting}
+            className={`flex items-center gap-1 hover:text-green-700 disabled:opacity-60 ${
+              commentState.userReaction === "LIKE"
+                ? "text-green-700 font-semibold"
+                : "text-green-600"
+            }`}
           >
-            <ThumbsUp className="w-4 h-4" /> {formatNumber(commentState.likes)}
+            <ThumbsUp
+              className="w-4 h-4"
+              fill={commentState.userReaction === "LIKE" ? "currentColor" : "none"}
+            />{" "}
+            {formatNumber(commentState.likes)}
           </button>
 
           {/* Reply */}
@@ -123,9 +158,17 @@ const CommentCard = ({ comment, onLike, onDislike }) => {
           {/* Dislike */}
           <button
             onClick={handleDislike}
-            className="flex items-center gap-1 text-red-500 hover:text-red-600"
+            disabled={reacting}
+            className={`flex items-center gap-1 hover:text-red-600 disabled:opacity-60 ${
+              commentState.userReaction === "DISLIKE"
+                ? "text-red-600 font-semibold"
+                : "text-red-500"
+            }`}
           >
-            <ThumbsDown className="w-4 h-4" />{" "}
+            <ThumbsDown
+              className="w-4 h-4"
+              fill={commentState.userReaction === "DISLIKE" ? "currentColor" : "none"}
+            />{" "}
             {formatNumber(commentState.dislikes)}
           </button>
 
