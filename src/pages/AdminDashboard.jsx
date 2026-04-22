@@ -8,6 +8,7 @@ import {
   RefreshCw,
   Sparkles,
   Tag,
+  Type,
   XCircle,
 } from "lucide-react";
 import {
@@ -34,6 +35,7 @@ const AdminDashboard = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [selectedTitle, setSelectedTitle] = useState("");
+  const [manualTitle, setManualTitle] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Technology");
   const [startTime, setStartTime] = useState("");
   const [duration, setDuration] = useState("");
@@ -80,7 +82,9 @@ const AdminDashboard = () => {
   };
 
   const handleDebateGenerate = async () => {
-    if (!articleUrl.trim() || !selectedTitle || !startTime || !duration) {
+    const finalTitle = manualTitle.trim() || selectedTitle;
+
+    if (!articleUrl.trim() || !finalTitle || !startTime || !duration) {
       setError("Please fill all details before generating a debate.");
       return;
     }
@@ -91,8 +95,8 @@ const AdminDashboard = () => {
       setSuccess("");
 
       await createDebate({
-        title: selectedTitle,
-        topic: selectedTitle,
+        title: finalTitle,
+        topic: finalTitle,
         description: "",
         category: selectedCategory,
         sideA: "Agree",
@@ -105,6 +109,7 @@ const AdminDashboard = () => {
       setSuccess("Debate generated successfully.");
       setSuggestedTitles([]);
       setSelectedTitle("");
+      setManualTitle("");
       setSelectedCategory("Technology");
       setStartTime("");
       setDuration("");
@@ -177,12 +182,11 @@ const AdminDashboard = () => {
         </div>
       </div>
 
-      {(loading || suggestedTitles.length > 0) && (
-        <div className="mt-8 bg-white p-6 rounded-lg shadow border">
+      <div className="mt-8 bg-white p-6 rounded-lg shadow border">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between mb-3">
             <div>
               <h2 className="text-xl font-semibold text-gray-800">
-                AI Suggested Titles
+                Create Debate Details
               </h2>
               <p className="text-sm text-gray-600 mt-1 break-all">{articleUrl}</p>
             </div>
@@ -205,21 +209,43 @@ const AdminDashboard = () => {
             </div>
           ) : (
             <>
-              <div className="space-y-2 mb-5">
-                {suggestedTitles.map((title, index) => (
-                  <div
-                    key={`${title}-${index}`}
-                    onClick={() => setSelectedTitle(title)}
-                    className={`p-3 rounded-md cursor-pointer border ${
-                      selectedTitle === title
-                        ? "border-green-600 bg-green-50"
-                        : "border-gray-200 hover:border-gray-400"
-                    }`}
-                  >
-                    <span className="font-medium text-gray-500 mr-2">{index + 1}.</span>
-                    {title}
-                  </div>
-                ))}
+              {suggestedTitles.length > 0 ? (
+                <div className="space-y-2 mb-5">
+                  {suggestedTitles.map((title, index) => (
+                    <div
+                      key={`${title}-${index}`}
+                      onClick={() => setSelectedTitle(title)}
+                      className={`p-3 rounded-md cursor-pointer border ${
+                        selectedTitle === title
+                          ? "border-green-600 bg-green-50"
+                          : "border-gray-200 hover:border-gray-400"
+                      }`}
+                    >
+                      <span className="font-medium text-gray-500 mr-2">{index + 1}.</span>
+                      {title}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="mb-5 text-sm text-gray-500">
+                  Generate AI titles from an article URL, or type a manual title below.
+                </p>
+              )}
+
+              <div className="mb-5">
+                <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
+                  <Type size={16} /> Manual Debate Title
+                </label>
+                <input
+                  type="text"
+                  value={manualTitle}
+                  onChange={(e) => setManualTitle(e.target.value)}
+                  placeholder="Type your own debate title, or leave blank to use the selected AI title"
+                  className="w-full border rounded-md p-2 mt-1 text-sm placeholder:text-gray-400 placeholder:font-normal"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  If you enter a manual title, it will be used instead of the selected AI title.
+                </p>
               </div>
 
               <div className="mb-5">
@@ -265,8 +291,8 @@ const AdminDashboard = () => {
                     step="0.5"
                     value={duration}
                     onChange={(e) => setDuration(e.target.value)}
-                    className="w-full border rounded-md p-2 mt-1 text-sm"
-                    placeholder="2"
+                    className="w-full border rounded-md p-2 mt-1 text-sm placeholder:text-gray-400 placeholder:font-normal"
+                    placeholder="Example: 2 hours"
                   />
                 </div>
               </div>
@@ -281,7 +307,6 @@ const AdminDashboard = () => {
             </>
           )}
         </div>
-      )}
 
       <div className="mt-8 bg-white p-6 rounded-lg shadow border">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-5">

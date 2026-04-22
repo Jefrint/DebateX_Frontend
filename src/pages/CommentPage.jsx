@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import DebateHeader from "../components/ActiveDebateHeader";
 import CommentCard from "../components/CommentCard";
 import DifferReactionBar from "../components/DifferReactionBar";
@@ -132,11 +132,13 @@ function getRejectionReason(response) {
 
 const DebateDiscussionPage = () => {
   const { debateId } = useParams();
+  const navigate = useNavigate();
   const [debate, setDebate] = useState(null);
   const [comments, setComments] = useState({ agree: [], differ: [] });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [rejectionNotice, setRejectionNotice] = useState(null);
+  const [showSignInPrompt, setShowSignInPrompt] = useState(false);
   const [submittingSide, setSubmittingSide] = useState("");
   const [commentDrafts, setCommentDrafts] = useState({
     agreeText: "",
@@ -169,7 +171,12 @@ const DebateDiscussionPage = () => {
         reaction,
       });
     } catch (err) {
-      setError(err.message || "Unable to submit reaction.");
+      if (err.isAuthError) {
+        setShowSignInPrompt(true);
+        setError("");
+      } else {
+        setError(err.message || "Unable to submit reaction.");
+      }
       throw err;
     }
   };
@@ -276,10 +283,23 @@ const DebateDiscussionPage = () => {
         [textField]: "",
       }));
     } catch (err) {
-      setError(err.message || "Unable to submit comment.");
+      if (err.isAuthError) {
+        setShowSignInPrompt(true);
+        setError("");
+      } else {
+        setError(err.message || "Unable to submit comment.");
+      }
     } finally {
       setSubmittingSide("");
     }
+  };
+
+  const goToLogin = () => {
+    navigate("/login", {
+      state: {
+        from: `/debates/${debateId}`,
+      },
+    });
   };
 
   if (loading) {
@@ -316,6 +336,31 @@ const DebateDiscussionPage = () => {
       ) : null}
 
       {error ? <p className="mb-4 text-sm text-red-600">{error}</p> : null}
+
+      {showSignInPrompt ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+          <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
+            <h2 className="text-xl font-semibold text-gray-900">Sign in required</h2>
+            <p className="mt-2 text-sm text-gray-600">
+              You can read the debate without signing in, but you need an account to post comments or react.
+            </p>
+            <div className="mt-5 flex gap-3">
+              <button
+                onClick={() => setShowSignInPrompt(false)}
+                className="flex-1 rounded-md border border-gray-300 px-4 py-2 text-gray-700 hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={goToLogin}
+                className="flex-1 rounded-md bg-red-600 px-4 py-2 text-white hover:bg-red-700"
+              >
+                Sign In
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       <DebateHeader
         title={debate?.title}

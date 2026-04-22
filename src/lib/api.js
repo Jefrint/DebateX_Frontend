@@ -47,7 +47,13 @@ export async function apiRequest(path, options = {}) {
         ? payload.message || payload.error || "Request failed"
         : payload || "Request failed";
 
-    throw new Error(message);
+    const error = new Error(message);
+    error.status = response.status;
+    error.isAuthError =
+      response.status === 401 ||
+      response.status === 403 ||
+      /authorization|token|unauthorized|sign in|login/i.test(message);
+    throw error;
   }
 
   return payload;

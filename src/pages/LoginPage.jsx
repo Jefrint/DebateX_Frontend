@@ -1,9 +1,10 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { loginUser } from "../services/debates";
 
 const LoginPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -30,7 +31,7 @@ const LoginPage = () => {
         localStorage.setItem("debatex_token", response.token);
       }
 
-      navigate("/");
+      navigate(location.state?.from || "/");
     } catch (err) {
       setError(err.message || "Invalid email or password.");
     } finally {
