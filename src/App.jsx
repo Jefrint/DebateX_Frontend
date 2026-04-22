@@ -7,21 +7,26 @@ import Signup from "./pages/Signup";
 import LoginPage from "./pages/LoginPage";
 import CommentPage from "./pages/CommentPage"
 import AdminDashboard from './pages/AdminDashboard';
+import DebateDetails from './pages/DebateDetails';
 
 function App() {
   return (
-    <div className="App">
-      <Navbar/>
+    <div className="App min-h-screen flex flex-col">
+      <Navbar />
 
-      <Routes>
-        <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="/debates/:debateId" element={<CommentPage />} />
-        <Route path="/home" element={<Home />} />
-        <Route path="/" element={<ExploreDebates />} />
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/login" element={<LoginPage />} />
-      </Routes>
-      <Footer/>
+      <main className="flex-1">
+        <Routes>
+          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/debates/:debateId" element={<CommentPage />} />
+          <Route path="/home" element={<Home />} />
+          <Route path="/" element={<ExploreDebates />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/debate/:id" element={<DebateDetails />} />
+        </Routes>
+      </main>
+
+      <Footer />
     </div>
   );
 }

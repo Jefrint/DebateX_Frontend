@@ -37,6 +37,10 @@ function normalizePercent(value) {
   return Number.isFinite(Number(value)) ? Number(value) : 0;
 }
 
+function firstValue(...values) {
+  return values.find((value) => value !== undefined && value !== null && value !== "");
+}
+
 function formatDateTime(value) {
   if (!value) {
     return "";
@@ -51,6 +55,15 @@ function formatDateTime(value) {
     dateStyle: "medium",
     timeStyle: "short",
   });
+}
+
+function getDateTimeValue(value) {
+  if (!value) {
+    return 0;
+  }
+
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? 0 : date.getTime();
 }
 
 function getRemainingLabel(endTime) {
@@ -88,8 +101,30 @@ function derivePercentages(sideACount, sideBCount) {
 }
 
 function normalizeExploreDebate(item = {}) {
-  const sideACount = Number(item.sideACount || item.sideACommentCount || item.sideAComments || 0);
-  const sideBCount = Number(item.sideBCount || item.sideBCommentCount || item.sideBComments || 0);
+  const sideACount = Number(
+    firstValue(
+      item.sideACount,
+      item.sideACommentCount,
+      item.sideAComments,
+      item.sideA_comments,
+      item.agreeCommentCount,
+      item.agreeComments,
+      0
+    )
+  );
+  const sideBCount = Number(
+    firstValue(
+      item.sideBCount,
+      item.sideBCommentCount,
+      item.sideBComments,
+      item.sideB_comments,
+      item.differCommentCount,
+      item.differComments,
+      item.disagreeCommentCount,
+      item.disagreeComments,
+      0
+    )
+  );
   const percentages = derivePercentages(sideACount, sideBCount);
 
   return {
@@ -104,8 +139,38 @@ function normalizeExploreDebate(item = {}) {
     startTime: formatDateTime(item.startTime || item.scheduledAt || item.createdAt || ""),
     remaining: item.remaining || item.timeRemaining || getRemainingLabel(item.endTime),
     participants: Number(item.participants || item.participantCount || sideACount + sideBCount),
-    agreePercent: normalizePercent(item.agreePercent ?? item.agree ?? percentages.agreePercent),
-    differPercent: normalizePercent(item.differPercent ?? item.differ ?? percentages.differPercent),
+    sideACommentCount: sideACount,
+    sideBCommentCount: sideBCount,
+    agreePercent: normalizePercent(
+      firstValue(
+        item.agreePercent,
+        item.agreePercentage,
+        item.agree_percent,
+        item.sideAPercent,
+        item.sideAPercentage,
+        item.sideA_percent,
+        item.sideA_percentage,
+        item.agree,
+        percentages.agreePercent
+      )
+    ),
+    differPercent: normalizePercent(
+      firstValue(
+        item.differPercent,
+        item.differPercentage,
+        item.differ_percent,
+        item.differ_percentage,
+        item.disagreePercent,
+        item.disagreePercentage,
+        item.sideBPercent,
+        item.sideBPercentage,
+        item.sideB_percent,
+        item.sideB_percentage,
+        item.differ,
+        item.disagree,
+        percentages.differPercent
+      )
+    ),
     status: String(item.status || "ongoing").toUpperCase(),
     images: item.images || item.participantAvatars || [],
     dateTime: formatDateTime(item.dateTime || item.startTime || item.scheduledAt || ""),
@@ -128,11 +193,14 @@ function normalizeArticle(item = {}) {
 }
 
 function normalizeComment(item = {}) {
+  const createdAt = item.time || item.createdAtLabel || item.createdAt || "";
+
   return {
     id: item.id || item.commentId || item.pk,
     side: item.side || "",
     text: item.text || item.comment || item.commentText || "",
-    time: item.time || item.createdAtLabel || item.createdAt || "",
+    time: formatDateTime(createdAt) || createdAt,
+    createdAt,
     likes: Number(item.likes || item.likeCount || 0),
     dislikes: Number(item.dislikes || item.dislikeCount || 0),
     userReaction: item.userReaction || null,
@@ -185,14 +253,42 @@ export async function fetchAllDebates() {
 
 export async function fetchDebateDetails(debateId) {
   const payload = await apiRequest(withDebateId(endpoints.debateDetails, debateId));
-  const debate = normalizeExploreDebate(payload.debate || payload);
-  const comments = (payload.comments || []).map(normalizeComment);
+  const rawComments = Array.isArray(payload) ? payload : payload.comments || [];
+  const firstComment = rawComments[0] || {};
+
+  const debate = normalizeExploreDebate(
+    Array.isArray(payload)
+      ? {
+          id: debateId,
+          title: firstComment.debateTitle,
+          sideA: "Agree",
+          sideB: "Differ",
+          status: "ENDED",
+        }
+      : { ...payload, ...(payload.debate || {}) }
+  );
+
+  const comments = rawComments
+    .map(normalizeComment)
+    .sort((a, b) => getDateTimeValue(b.createdAt) - getDateTimeValue(a.createdAt));
+  const sideA = String(debate.sideA || "Agree").toLowerCase();
+  const sideB = String(debate.sideB || "Differ").toLowerCase();
+  const agreeComments = comments.filter(
+    (comment) => String(comment.side).toLowerCase() === sideA
+  );
+  const differComments = comments.filter(
+    (comment) => String(comment.side).toLowerCase() === sideB
+  );
 
   return {
-    debate,
+    debate: {
+      ...debate,
+      sideACommentCount: debate.sideACommentCount || agreeComments.length,
+      sideBCommentCount: debate.sideBCommentCount || differComments.length,
+    },
     comments: {
-      agree: comments.filter((comment) => comment.side === debate.sideA),
-      differ: comments.filter((comment) => comment.side === debate.sideB),
+      agree: agreeComments,
+      differ: differComments,
     },
   };
 }

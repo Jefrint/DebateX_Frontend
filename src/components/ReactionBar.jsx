@@ -1,71 +1,24 @@
-import React, { useEffect, useState } from "react";
-import { ThumbsUp, MessageCirclePlus } from "lucide-react"; // for icons (optional)
+import React from "react";
+import { MessageCirclePlus } from "lucide-react";
 
-const ReactionBar = ({ agreeCount = 0, differCount = 0, onReact }) => {
-  const [reactions, setReactions] = useState({
-    agreeCount,
-    differCount,
-    selected: null, // "agree" or "differ"
-  });
-
-  useEffect(() => {
-    setReactions((prev) => ({
-      ...prev,
-      agreeCount,
-      differCount,
-    }));
-  }, [agreeCount, differCount]);
-
-  // Format counts like 12.4k, 1.2k, etc.
+const ReactionBar = ({ count = 0 }) => {
   const formatCount = (num) => {
     if (num >= 1000) return (num / 1000).toFixed(1) + "k";
     return num;
   };
 
-  const handleReaction = (type) => {
-    setReactions((prev) => ({
-      ...prev,
-      selected: type,
-      agreeCount:
-        type === "agree" ? prev.agreeCount + 1 : prev.agreeCount,
-      differCount:
-        type === "differ" ? prev.differCount + 1 : prev.differCount,
-    }));
-    onReact?.(type);
-  };
-
   return (
     <div className="bg-[#F5F9FF] flex items-center justify-between px-6 py-3 rounded-md shadow-sm max-w-lg mx-auto">
-      {/* Left - Thumbs Up */}
-      <div
-        onClick={() => handleReaction("agree")}
-        className={`flex flex-col items-center cursor-pointer ${
-          reactions.selected === "agree" ? "text-green-600" : "text-gray-700"
-        }`}
-      >
-        <div className="bg-green-100 rounded-full p-2">
-          <ThumbsUp className="w-5 h-5 text-green-600" />
-        </div>
-        <p className="text-xs font-medium mt-1">
-          {formatCount(reactions.agreeCount)}
-        </p>
-      </div>
+      <div className="w-10" />
 
-      {/* Center Text */}
       <div className="text-sm font-semibold text-gray-800">Agree</div>
 
-      {/* Right - Differ (Chat Plus Icon) */}
-      <div
-        onClick={() => handleReaction("differ")}
-        className={`flex flex-col items-center cursor-pointer ${
-          reactions.selected === "differ" ? "text-green-600" : "text-gray-700"
-        }`}
-      >
+      <div className="flex flex-col items-center text-gray-700">
         <div className="bg-green-600 rounded-full p-2">
           <MessageCirclePlus className="w-5 h-5 text-white" />
         </div>
         <p className="text-xs font-medium mt-1 text-gray-700">
-          {formatCount(reactions.differCount)}
+          {formatCount(count)}
         </p>
       </div>
     </div>

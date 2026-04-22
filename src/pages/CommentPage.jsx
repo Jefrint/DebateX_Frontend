@@ -15,12 +15,128 @@ function getSecondsUntil(endTime) {
   return diffMs > 0 ? Math.floor(diffMs / 1000) : 0;
 }
 
+function formatCommentTime(value) {
+  if (!value) {
+    return "";
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return date.toLocaleString("en-IN", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
+}
+
+function formatReason(value) {
+  if (!value) {
+    return "";
+  }
+
+  if (Array.isArray(value)) {
+    return value.map(formatReason).filter(Boolean).join(", ");
+  }
+
+  if (typeof value === "object") {
+    return (
+      value.reason ||
+      value.moderationReason ||
+      value.moderation_reason ||
+      value["moderation reason"] ||
+      value.message ||
+      value.feedback ||
+      value.explanation ||
+      value.detail ||
+      value.details ||
+      JSON.stringify(value)
+    );
+  }
+
+  return String(value);
+}
+
+function findReasonInResponse(value, visited = new Set()) {
+  if (!value || typeof value !== "object" || visited.has(value)) {
+    return "";
+  }
+
+  visited.add(value);
+
+  const reasonKeys = [
+    "reason",
+    "rejectionReason",
+    "rejection_reason",
+    "moderationReason",
+    "moderation_reason",
+    "moderation reason",
+    "moderationReasonText",
+    "moderation_reason_text",
+    "aiReason",
+    "ai_reason",
+    "feedback",
+    "explanation",
+    "detail",
+    "details",
+    "description",
+    "message",
+    "error",
+  ];
+
+  for (const key of reasonKeys) {
+    const reason = formatReason(value[key]);
+    if (reason) {
+      return reason;
+    }
+  }
+
+  for (const [key, childValue] of Object.entries(value)) {
+    const lowerKey = key.toLowerCase();
+    const looksLikeReason =
+      lowerKey.includes("reason") ||
+      lowerKey.includes("feedback") ||
+      lowerKey.includes("explanation") ||
+      lowerKey.includes("detail") ||
+      lowerKey.includes("message");
+
+    if (looksLikeReason) {
+      const reason = formatReason(childValue);
+      if (reason) {
+        return reason;
+      }
+    }
+  }
+
+  for (const childValue of Object.values(value)) {
+    const reason = findReasonInResponse(childValue, visited);
+    if (reason) {
+      return reason;
+    }
+  }
+
+  return "";
+}
+
+function getRejectionReason(response) {
+  return (
+    formatReason(response?.comment?.moderationReason) ||
+    formatReason(response?.comment?.moderation_reason) ||
+    formatReason(response?.comment?.["moderation reason"]) ||
+    formatReason(response?.comment?.reason) ||
+    findReasonInResponse(response) ||
+    "The AI rejected this comment, but the server did not return a reason."
+  );
+}
+
 const DebateDiscussionPage = () => {
   const { debateId } = useParams();
   const [debate, setDebate] = useState(null);
   const [comments, setComments] = useState({ agree: [], differ: [] });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [rejectionNotice, setRejectionNotice] = useState(null);
   const [submittingSide, setSubmittingSide] = useState("");
   const [commentDrafts, setCommentDrafts] = useState({
     agreeText: "",
@@ -84,12 +200,22 @@ const DebateDiscussionPage = () => {
         commentText,
       });
 
+      if (response.visibleInDebate === false) {
+        console.warn("Rejected comment response:", response);
+        setRejectionNotice({
+          title: "Comment Rejected",
+          reason: getRejectionReason(response),
+        });
+        return;
+      }
+
       if (response.visibleInDebate && response.comment) {
         const normalized = {
           id: response.comment.commentId,
           side: response.comment.side,
           text: response.comment.commentText,
-          time: response.comment.createdAt,
+          time: formatCommentTime(response.comment.createdAt),
+          createdAt: response.comment.createdAt,
           likes: response.comment.likeCount || 0,
           dislikes: response.comment.dislikeCount || 0,
           replies: 0,
@@ -104,10 +230,45 @@ const DebateDiscussionPage = () => {
         setComments((prev) => ({
           ...prev,
           agree:
-            side === debate.sideA ? [...prev.agree, normalized] : prev.agree,
+            side === debate.sideA ? [normalized, ...prev.agree] : prev.agree,
           differ:
-            side === debate.sideB ? [...prev.differ, normalized] : prev.differ,
+            side === debate.sideB ? [normalized, ...prev.differ] : prev.differ,
         }));
+
+        setDebate((prev) => {
+          if (!prev) {
+            return prev;
+          }
+
+          const sideACommentCount =
+            Number(prev.sideACommentCount ?? comments.agree.length) +
+            (isAgree ? 1 : 0);
+          const sideBCommentCount =
+            Number(prev.sideBCommentCount ?? comments.differ.length) +
+            (isAgree ? 0 : 1);
+          const totalComments = sideACommentCount + sideBCommentCount;
+          const agreePercent =
+            totalComments > 0
+              ? Math.round((sideACommentCount / totalComments) * 100)
+              : prev.agreePercent;
+
+          return {
+            ...prev,
+            sideACommentCount,
+            sideBCommentCount,
+            agreePercent,
+            differPercent:
+              totalComments > 0 ? 100 - agreePercent : prev.differPercent,
+          };
+        });
+
+        try {
+          const latest = await fetchDebateDetails(debateId);
+          setDebate(latest.debate);
+          setComments(latest.comments);
+        } catch {
+          // The optimistic update above keeps the UI current if refresh fails.
+        }
       }
 
       setCommentDrafts((prev) => ({
@@ -131,6 +292,29 @@ const DebateDiscussionPage = () => {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
+      {rejectionNotice ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+          <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
+            <h2 className="text-xl font-bold text-red-600">
+              {rejectionNotice.title}
+            </h2>
+            <p className="mt-4 text-xs font-semibold uppercase tracking-wide text-gray-500">
+              Reason
+            </p>
+            <p className="mt-1 rounded-md bg-red-50 p-3 text-sm leading-6 text-gray-800">
+              {rejectionNotice.reason}
+            </p>
+            <button
+              type="button"
+              onClick={() => setRejectionNotice(null)}
+              className="mt-6 w-full rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+            >
+              Okay
+            </button>
+          </div>
+        </div>
+      ) : null}
+
       {error ? <p className="mb-4 text-sm text-red-600">{error}</p> : null}
 
       <DebateHeader
@@ -144,8 +328,7 @@ const DebateDiscussionPage = () => {
         <div className="p-4">
           <div className="mb-6">
             <ReactionBar
-              agreeCount={comments.agree.length}
-              differCount={comments.differ.length}
+              count={debate?.sideACommentCount ?? comments.agree.length}
             />
           </div>
           <div className="bg-white border rounded-xl p-4 mb-6">
@@ -187,8 +370,7 @@ const DebateDiscussionPage = () => {
         <div className="p-4">
           <div className="mb-6">
             <DifferReactionBar
-              differCount={comments.differ.length}
-              agreeCount={comments.agree.length}
+              count={debate?.sideBCommentCount ?? comments.differ.length}
             />
           </div>
           <div className="bg-white border rounded-xl p-4 mb-6">

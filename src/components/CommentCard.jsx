@@ -69,7 +69,7 @@ const CommentCard = ({ comment, onLike, onDislike }) => {
           userReaction: response.userReaction ?? null,
         }));
       }
-    } catch (error) {
+    } catch {
       setCommentState(previousState);
     } finally {
       setReacting(false);

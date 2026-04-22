@@ -1,4 +1,5 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import OngoingDebateCard from "../components/DebateCard";
 import UpcomingDebateCard from "../components/Up_Debates";
@@ -22,6 +23,8 @@ const ExploreDebates = () => {
   const upcomingRef = useRef(null);
   const pastRef = useRef(null);
 
+  const navigate = useNavigate();
+
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [activeOngoingIndex, setActiveOngoingIndex] = useState(0);
   const [data, setData] = useState({
@@ -33,44 +36,55 @@ const ExploreDebates = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    const loadDebates = async () => {
-      try {
+  const loadDebates = useCallback(async ({ showLoading = false } = {}) => {
+    try {
+      if (showLoading) {
         setLoading(true);
-        setError("");
-        const response = await fetchExploreDebates();
-        setData(response);
-      } catch (err) {
-        setError(err.message || "Unable to load debates right now.");
-      } finally {
+      }
+
+      setError("");
+      const response = await fetchExploreDebates();
+      setData(response);
+    } catch (err) {
+      setError(err.message || "Unable to load debates right now.");
+    } finally {
+      if (showLoading) {
         setLoading(false);
       }
-    };
-
-    loadDebates();
+    }
   }, []);
 
-  const filterByCategory = (debates) => {
+  useEffect(() => {
+    loadDebates({ showLoading: true });
+
+    const interval = setInterval(() => {
+      loadDebates();
+    }, 10000);
+
+    return () => clearInterval(interval);
+  }, [loadDebates]);
+
+  const filterByCategory = useCallback((debates) => {
     if (selectedCategory === "All") {
       return debates;
     }
 
     return debates.filter((debate) => debate.category === selectedCategory);
-  };
+  }, [selectedCategory]);
 
   const filteredOngoingDebates = useMemo(
     () => filterByCategory(data.ongoing),
-    [data.ongoing, selectedCategory]
+    [data.ongoing, filterByCategory]
   );
 
   const filteredUpcomingDebates = useMemo(
     () => filterByCategory(data.upcoming),
-    [data.upcoming, selectedCategory]
+    [data.upcoming, filterByCategory]
   );
 
   const filteredPastDebates = useMemo(
     () => filterByCategory(data.past),
-    [data.past, selectedCategory]
+    [data.past, filterByCategory]
   );
 
   useEffect(() => {
@@ -241,12 +255,21 @@ const ExploreDebates = () => {
         </h2>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredPastDebates.length > 0 ? (
-            filteredPastDebates.map((debate) => (
-              <PastDebateCard key={debate.id || debate.title} debate={debate} />
+            filteredPastDebates.slice(0, 6).map((debate) => (
+              <button
+                key={debate.id || debate.title}
+                type="button"
+                onClick={() => debate.id && navigate(`/debate/${debate.id}`)}
+                className="text-left transition hover:-translate-y-1 disabled:cursor-not-allowed disabled:opacity-70"
+                disabled={!debate.id}
+              >
+                <PastDebateCard debate={debate} />
+              </button>
             ))
           ) : (
             <p className="text-gray-500">
-              No past debates available{selectedCategory === "All" ? "." : ` for ${selectedCategory}.`}
+              No past debates available
+              {selectedCategory === "All" ? "." : ` for ${selectedCategory}.`}
             </p>
           )}
         </div>

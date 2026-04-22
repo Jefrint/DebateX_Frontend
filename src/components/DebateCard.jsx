@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 const DebateCard = ({ debate }) => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-
   // Simulate loading effect (optional)
   useEffect(() => {
     const timer = setTimeout(() => setLoading(false), 500);
@@ -65,7 +64,7 @@ const DebateCard = ({ debate }) => {
             ))}
           </div>
           <span className="ml-3 text-sm text-gray-700">
-            {debate.participants}+ participants
+            {debate.participants}+ comments
           </span>
         </div>
       </div>
