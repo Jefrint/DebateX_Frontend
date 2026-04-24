@@ -73,8 +73,8 @@ const ExploreDebates = () => {
   }, [selectedCategory]);
 
   const filteredOngoingDebates = useMemo(
-    () => filterByCategory(data.ongoing),
-    [data.ongoing, filterByCategory]
+    () => data.ongoing,
+    [data.ongoing]
   );
 
   const filteredUpcomingDebates = useMemo(
@@ -83,13 +83,13 @@ const ExploreDebates = () => {
   );
 
   const filteredPastDebates = useMemo(
-    () => filterByCategory(data.past),
-    [data.past, filterByCategory]
+    () => data.past,
+    [data.past]
   );
 
   useEffect(() => {
     setActiveOngoingIndex(0);
-  }, [selectedCategory, filteredOngoingDebates.length]);
+  }, [filteredOngoingDebates.length]);
 
   const handleScroll = (ref) => {
     ref.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -194,9 +194,7 @@ const ExploreDebates = () => {
             ) : null}
           </div>
         ) : (
-          <p className="text-gray-500">
-            No ongoing debates available{selectedCategory === "All" ? "." : ` for ${selectedCategory}.`}
-          </p>
+          <p className="text-gray-500">No ongoing debates available.</p>
         )}
       </section>
 
@@ -267,10 +265,7 @@ const ExploreDebates = () => {
               </button>
             ))
           ) : (
-            <p className="text-gray-500">
-              No past debates available
-              {selectedCategory === "All" ? "." : ` for ${selectedCategory}.`}
-            </p>
+            <p className="text-gray-500">No past debates available.</p>
           )}
         </div>
       </section>

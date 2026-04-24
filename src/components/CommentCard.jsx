@@ -2,8 +2,6 @@ import React, { useEffect, useState } from "react";
 import {
   ThumbsUp,
   ThumbsDown,
-  MessageCircle,
-  Share2,
   Flame,
 } from "lucide-react";
 
@@ -80,12 +78,6 @@ const CommentCard = ({ comment, onLike, onDislike }) => {
 
   const handleDislike = () => handleReaction("DISLIKE");
 
-  const handleReply = () =>
-    setCommentState((prev) => ({ ...prev, replies: prev.replies + 1 }));
-
-  const handleShare = () =>
-    setCommentState((prev) => ({ ...prev, shares: prev.shares + 1 }));
-
   return (
     <div className=" bg-white rounded-xl shadow p-4 mb-4 border border-gray-200">
       {/* Header Section */}
@@ -146,15 +138,6 @@ const CommentCard = ({ comment, onLike, onDislike }) => {
             {formatNumber(commentState.likes)}
           </button>
 
-          {/* Reply */}
-          <button
-            onClick={handleReply}
-            className="flex items-center gap-1 text-gray-600 hover:text-gray-700"
-          >
-            <MessageCircle className="w-4 h-4" />{" "}
-            {formatNumber(commentState.replies)}
-          </button>
-
           {/* Dislike */}
           <button
             onClick={handleDislike}
@@ -170,14 +153,6 @@ const CommentCard = ({ comment, onLike, onDislike }) => {
               fill={commentState.userReaction === "DISLIKE" ? "currentColor" : "none"}
             />{" "}
             {formatNumber(commentState.dislikes)}
-          </button>
-
-          {/* Share */}
-          <button
-            onClick={handleShare}
-            className="flex items-center gap-1 text-gray-600 hover:text-gray-700"
-          >
-            <Share2 className="w-4 h-4" /> {formatNumber(commentState.shares)}
           </button>
         </div>
       </div>

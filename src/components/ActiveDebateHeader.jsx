@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { MoreVertical } from "lucide-react";
 
 const ActiveDebateHeader = ({
   title = "Debate topic",
@@ -64,15 +63,6 @@ const ActiveDebateHeader = ({
             {formatTime(timeRemaining)}
           </p>
         </div>
-      </div>
-
-      {/* Bottom Toolbar */}
-      <div className="flex justify-between items-center mt-4 text-sm text-gray-600">
-        <button className="text-blue-600 hover:underline">See Translation</button>
-
-        <button className="hover:text-gray-800 transition">
-          <MoreVertical className="w-5 h-5" />
-        </button>
       </div>
     </div>
   );
