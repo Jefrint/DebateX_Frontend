@@ -8,4 +8,13 @@ export default defineConfig({
   plugins: [react(),
     tailwindcss(),
   ],
+  server: {
+    proxy: {
+      '/api/manorama': {
+        target: 'https://api.manoramaonline.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/manorama/, ''),
+      },
+    },
+  },
 })

@@ -5,7 +5,7 @@ import OngoingDebateCard from "../components/DebateCard";
 import UpcomingDebateCard from "../components/Up_Debates";
 import InterestedArticleCard from "../components/Int_Article";
 import PastDebateCard from "../components/PastDebates";
-import { fetchExploreDebates } from "../services/debates";
+import { fetchExploreDebates, fetchManoramaArticles } from "../services/debates";
 
 const categories = [
   "All",
@@ -33,6 +33,7 @@ const ExploreDebates = () => {
     past: [],
     articles: [],
   });
+  const [manoramaArticles, setManoramaArticles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -56,6 +57,7 @@ const ExploreDebates = () => {
 
   useEffect(() => {
     loadDebates({ showLoading: true });
+    fetchManoramaArticles().then(setManoramaArticles).catch(() => {});
 
     const interval = setInterval(() => {
       loadDebates();
@@ -237,8 +239,8 @@ const ExploreDebates = () => {
           Interested Articles
         </h2>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
-          {data.articles.length > 0 ? (
-            data.articles.map((article) => (
+          {manoramaArticles.length > 0 ? (
+            manoramaArticles.map((article) => (
               <InterestedArticleCard key={article.id || article.title} article={article} />
             ))
           ) : (

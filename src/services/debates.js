@@ -353,3 +353,21 @@ export async function cancelDebate(debateId) {
     method: "POST",
   });
 }
+
+const MANORAMA_IMG_BASE = "https://img-mm.manoramaonline.com";
+
+export async function fetchManoramaArticles() {
+  const res = await fetch("/api/manorama/contents?limit=6");
+  const data = await res.json();
+  const contents = data?.contents || [];
+  return contents.map((item) => {
+    const thumb = (item.thumbnailImgs || []).find((i) => i.aspectratio === "square") || item.thumbnailImgs?.[0];
+    return {
+      id: item.id,
+      title: item.contentTitle?.title || "Untitled",
+      image: thumb?.url ? `${MANORAMA_IMG_BASE}${thumb.url}?w=96&h=96` : "",
+      interestedCount: item.interestedCount || 0,
+      url: item.contentTitle?.url ? `https://www.manoramaonline.com${item.contentTitle.url.replace("/content/mm/mo", "")}` : "",
+    };
+  });
+}
